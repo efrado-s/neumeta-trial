@@ -1,4 +1,4 @@
-from .resnet import ResNet18_convbn
+# from .resnet import ResNet18_convbn
 # from .alexnet import AlexNet
 from .resnet_imagenet import resnet18_imagenet
 from .utils import fuse_module
@@ -6,7 +6,7 @@ from .resnet_cifar import *
 from .lenet import MnistNet, MnistResNet
 import torch
 from smooth.permute import PermutationManager, compute_tv_loss_for_network
-from .resnet_tinyimagenet import resnet18_tinyimagenet
+# from .resnet_tinyimagenet import resnet18_tinyimagenet
 import os
 
 def create_mnist_model(model_name, hidden_dim, depths=None, path=None):
