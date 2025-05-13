@@ -21,6 +21,7 @@ def create_model_cifar10(model_name, hidden_dim, path=None, smooth=False):
 
     fuse_module(model)  # Fuse convolutional and batch normalization layers
 
+    # Load checkpoint if the weights exist already
     if path:
         if os.path.exists(path):
             print('Loading model from', path)
