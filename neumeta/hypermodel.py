@@ -169,8 +169,8 @@ class NeRF_MLP_Compose(nn.Module):
 
         # Process each coordinate in Fourier encoded x tensor using residual block
         for lid in unique_layer_ids:
-            mask = lid == layer_id
-            output_x[mask] = self.model[lid].forward(x[mask])
+            mask = lid == layer_id  # Get the corresponding neurons (or channels) in each layer
+            output_x[mask] = self.model[lid].forward(x[mask])  # Process that layer
         return output_x / (input_dim.unsqueeze(-1))
     
 class NeRF_ResMLP_Compose(NeRF_MLP_Compose):
