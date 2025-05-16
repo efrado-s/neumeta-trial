@@ -1,0 +1,2 @@
+# Ignore unfinished files
+.models/resnet_imagenet.py
