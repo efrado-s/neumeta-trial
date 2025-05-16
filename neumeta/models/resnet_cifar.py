@@ -240,7 +240,7 @@ class CifarResNet(nn.Module):
     
     @property
     def learnable_parameter(self):
-        """Set parameters for last blocks in layer3 specified in num_layers_inr to trainable parameter"""
+        """Get the coordinates of learnable parameters for last blocks in layer3 specified in num_layers_inr"""
         # Get the layers which we want to train parameters on
         self.keys = [k 
                      for k, w in self.named_parameters() 
