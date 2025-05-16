@@ -1,2 +1,4 @@
 # Ignore unfinished files
-.models/resnet_imagenet.py
+neumeta/train_imagenet_ddp.ipynb
+neumeta/models/resnet_imagenet.py
+prune
