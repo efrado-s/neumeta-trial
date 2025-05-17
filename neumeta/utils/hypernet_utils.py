@@ -173,7 +173,7 @@ def get_hypernetwork(args, number_param, device='cuda'):
             num_freqs=args.hyper_model.num_freqs,
             scalar=args.hyper_model.get('scalar', 0.1),
             num_compose=number_param
-        )
+        ).to(device)
     else:
         raise ValueError(f'Unsupported hyper_model_type: {hyper_model_type}')
 
