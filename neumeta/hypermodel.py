@@ -165,7 +165,7 @@ class NeRF_MLP_Compose(nn.Module):
         x[:, :3] = x[:, :3] / x[:, 3:]  # Normalize coordinates tensor
         x = self.positional_encoding(x)  # Apply Fourier encoding
         unique_layer_ids = torch.unique(layer_id)
-        output_x = torch.zeros((x.size(0), self.output_dim).to(x.device))  # Create output tensor with size of input tensor
+        output_x = torch.zeros((x.size(0), self.output_dim)).to(x.device)  # Create output tensor with size of input tensor
 
         # Process each coordinate in Fourier encoded x tensor using residual block
         for lid in unique_layer_ids:
