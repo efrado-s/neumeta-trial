@@ -3,4 +3,8 @@ neumeta/train_imagenet_ddp.ipynb
 neumeta/models/resnet_imagenet.py
 prune
 
+# Ignore pycache
 **/__pycache__
+
+# Ignore data
+data
