@@ -2,3 +2,5 @@
 neumeta/train_imagenet_ddp.ipynb
 neumeta/models/resnet_imagenet.py
 prune
+
+**/__pycache__
