@@ -140,51 +140,6 @@ def shuffle_coordinates_all(dim_dict):
     return dim_dict
 
 
-# Function to create optimizer
-def get_optimizer(args, hyper_model):
-    criterion = torch.nn.CrossEntropyLoss()
-    val_criterion = torch.nn.CrossEntropyLoss()
-
-    # Get optimizer for training
-    optimizer_name = args.training.get('optimizer', 'adamw')
-    if optimizer_name == 'adamw':
-        optimizer = AdamW(hyper_model.parameters(),
-                          lr=args.training.learning_rate,
-                          weight_decay=args.training.weight_decay)
-    elif optimizer_name == 'adam':
-        optimizer = Adam(hyper_model.parameters(),
-                         lr=args.training.learning_rate,
-                         weight_decay=args.training.weight_decay)
-    elif optimizer_name == 'sgd':
-        optimizer = torch.optim.SGD(hyper_model.parameters(),
-                                    lr=args.training.learning_rate,
-                                    momentum=args.training.get('momentum', 0.9),
-                                    weight_decay=args.training.weight_decay)
-    elif optimizer_name == 'rmsprop':
-        optimizer = torch.optim.RMSprop(hyper_model.parameters(),
-                                        lr=args.training.learning_rate,
-                                        momentum=args.training.get('momentum', 0.9),
-                                        weight_decay=args.training.weight_decay)
-    elif optimizer_name == 'adagrad':
-        optimizer = torch.optim.Adagrad(hyper_model.parameters(),
-                                        lr=args.training.learning_rate,
-                                        weight_decay=args.training.weight_decay)
-    else:
-        raise ValueError(f'Unknown optimizer name: {optimizer_name}')
-    
-    # Decides which step scheduler to use
-    scheduler_name = args.training.get('scheduler', 'multistep')
-    if scheduler_name == 'cosine':
-        print(f'Using cosine scheduler, T_max: {args.training.T_max}')
-        scheduler = torch.optim.lr_scheduler.CosineAnnealingLR(optimizer, T_max=args.training.T_max)
-    elif scheduler_name == 'multistep':
-        scheduler = MultiStepLR(optimizer,
-                                milestones=args.training.get('lr_steps', [args.experiment.num_epochs]),
-                                gamma=0.1)
-
-    return criterion, val_criterion, optimizer, scheduler
-
-
 # Function to find reconstruct_loss
 def weighted_regression_loss(reconstructed_weights, gt_selected_weights, epsilon=1e-6):
     """
@@ -371,3 +326,133 @@ def sample_subset(coords_tensor, keys_list, indices_list, size_list, key_mask, r
     subset_size = size_list[selected_mask]
 
     return subset_coords, subset_keys, subset_indices, subset_size, selected_keys
+
+
+# Function to create optimizer
+def get_optimizer(args, hyper_model):
+    criterion = torch.nn.CrossEntropyLoss()
+    val_criterion = torch.nn.CrossEntropyLoss()
+
+    # Get optimizer for training
+    optimizer_name = args.training.get('optimizer', 'adamw')
+    if optimizer_name == 'adamw':
+        optimizer = AdamW(hyper_model.parameters(),
+                          lr=args.training.learning_rate,
+                          weight_decay=args.training.weight_decay)
+    elif optimizer_name == 'adam':
+        optimizer = Adam(hyper_model.parameters(),
+                         lr=args.training.learning_rate,
+                         weight_decay=args.training.weight_decay)
+    elif optimizer_name == 'sgd':
+        optimizer = torch.optim.SGD(hyper_model.parameters(),
+                                    lr=args.training.learning_rate,
+                                    momentum=args.training.get('momentum', 0.9),
+                                    weight_decay=args.training.weight_decay)
+    elif optimizer_name == 'rmsprop':
+        optimizer = torch.optim.RMSprop(hyper_model.parameters(),
+                                        lr=args.training.learning_rate,
+                                        momentum=args.training.get('momentum', 0.9),
+                                        weight_decay=args.training.weight_decay)
+    elif optimizer_name == 'adagrad':
+        optimizer = torch.optim.Adagrad(hyper_model.parameters(),
+                                        lr=args.training.learning_rate,
+                                        weight_decay=args.training.weight_decay)
+    else:
+        raise ValueError(f'Unknown optimizer name: {optimizer_name}')
+    
+    # Decides which step scheduler to use
+    scheduler_name = args.training.get('scheduler', 'multistep')
+    if scheduler_name == 'cosine':
+        print(f'Using cosine scheduler, T_max: {args.training.T_max}')
+        scheduler = torch.optim.lr_scheduler.CosineAnnealingLR(optimizer, T_max=args.training.T_max)
+    elif scheduler_name == 'multistep':
+        scheduler = MultiStepLR(optimizer,
+                                milestones=args.training.get('lr_steps', [args.experiment.num_epochs]),
+                                gamma=0.1)
+
+    return criterion, val_criterion, optimizer, scheduler
+
+
+# Functions for evaluating or testing model
+def sample_single_model(hyper_model, model, device='cuda', cfg=None):
+    """Create one model from hypernetwork"""
+    # Initialize a model to accumulate the weights over K samples
+    coords_tensor, keys_list, indices_list, size_list = sample_coordinates(model)
+    key_mask = create_key_masks(keys_list=keys_list)
+    
+    # Sample weight from hypernetwork
+    # use torch.no_grad() to prevent gradient changing
+    with torch.no_grad():
+        model, _ = sample_weights(hyper_model, model, 
+                                  coords_tensor, keys_list, indices_list, size_list,
+                                  key_mask, list(key_mask.keys()),
+                                  device=device, NORM=cfg.dimensions.norm)
+    model.eval()
+
+    return model
+
+def average_models(models):
+    """
+    Average the weights of multiple PyTorch models.
+    
+    Args:
+    models (list of torch.nn.Module): List of models with the same architecture.
+    
+    Returns:
+    torch.nn.Module: A model with the average weights.
+    """
+    # Validate if models list is not empty
+    if not models:
+        raise ValueError('No models to average.')
+    
+    # Create a copy of the first model which will be used to store the average weights
+    averaged_model = copy.deepcopy(models[0])
+
+    # Initialize a dict to hold the sum of all model parameters
+    param_sum = dict()
+
+    for model in models:
+        for name, param in model.named_parameters():
+            if name not in param_sum:
+                # Initialize the sum for this parameter as a tensor filled with zeros with the same shape as the parameter
+                param_sum[name] = torch.zeros_like(param.data)
+            
+            # Add the parameter
+            param_sum[name] += param.data
+
+    # Average the sum of parameters by the numbers of models
+    for name in param_sum:
+        param_sum[name] = param_sum[name] / len(models)
+
+    # Update the averaged model with the new averaged weights
+    for name, param in averaged_model.named_parameters():
+        param.data = param_sum[name]
+    
+    return averaged_model
+
+def sample_merge_model(hyper_model, model, args, K=50, device='cuda'):
+    # Initialize a model to accumulate the weights over K samples
+    hyper_model.eval()
+    models = []
+
+    for k in range(K):
+        model_cls_temp = copy.deepcopy(model)
+        model_cls_temp.to(device)
+
+        # Sampling and merging weights
+        coords_tensor, keys_list, indices_list, size_list = sample_coordinates(model_cls_temp)
+        key_mask = create_key_masks(keys_list=keys_list)
+        if k > 0:
+            coords_tensor = coords_tensor + (torch.rand_like(coords_tensor) - 0.5) * args.training.coordinate_noise
+        model_cls_temp, _ = sample_weights(hyper_model, model,
+                                           coords_tensor, keys_list, indices_list, size_list,
+                                           key_mask, list(key_mask.keys()),
+                                           device=device, NORM=args.dimensions.norm)
+        models.append(model_cls_temp)
+
+    # Average the weights of the models
+    accumulated_model = average_models(models)
+
+    accumulated_model.eval()
+    return accumulated_model
+
