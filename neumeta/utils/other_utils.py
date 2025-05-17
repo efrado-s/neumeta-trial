@@ -7,7 +7,7 @@ from omegaconf import OmegaConf
 from prettytable import PrettyTable
 
 # Functions to handle (or parse) arguments
-def parse_args():
+def parse_args(argv):
     parser = argparse.ArgumentParser(description='Train a NeRF model')
 
     parser.add_argument('--config', type=str, required=True,
@@ -23,7 +23,7 @@ def parse_args():
     parser.add_argument('--test', action='store_true',
                         default=False, help='Test the model')
     
-    args = parser.parse_args()
+    args = parser.parse_args(argv)
 
     config = OmegaConf.load(args.config)
 
