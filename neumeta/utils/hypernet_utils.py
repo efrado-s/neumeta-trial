@@ -171,7 +171,7 @@ def get_hypernetwork(args, number_param, device='cuda'):
             num_layers=args.hyper_model.num_layers,
             output_dim=args.hyper_model.output_dim,
             num_freqs=args.hyper_model.num_freqs,
-            scalars=args.hyper_model.get('scalar', 0.1),
+            scalar=args.hyper_model.get('scalar', 0.1),
             num_compose=number_param
         )
     else:
