@@ -31,7 +31,7 @@ def create_model_cifar10(model_name, hidden_dim, path=None, smooth=False):
     # Smooth initial weights manifold before processing it
     if smooth:
         print('Smooth the parameters of the model')
-        print(f'TV original model: {compute_tv_loss_for_network(model, lambda_tv=1.0).item()}')
+        print(f'Old TV original model: {compute_tv_loss_for_network(model, lambda_tv=1.0).item()}')
         input_tensor = torch.randn(1, 3, 32, 32)
         permute_func = PermutationManager(model, input_tensor)
         permute_dict = permute_func.compute_permute_dict()
@@ -40,6 +40,6 @@ def create_model_cifar10(model_name, hidden_dim, path=None, smooth=False):
             ('fc.weight', 'out_channels'),
             ('fc.bias', 'out_channels')
         ])
-        print(f'TV original model: {compute_tv_loss_for_network(model, lambda_tv=1.0).item()}')
+        print(f'Permuted TV original model: {compute_tv_loss_for_network(model, lambda_tv=1.0).item()}')
     
     return model
