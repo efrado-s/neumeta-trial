@@ -105,6 +105,8 @@ class BasicBlock(nn.Module):
         out += identity
         out = self.relu(out)
 
+        return out
+
 
 class BasicBlock_Resize(BasicBlock):
     """
@@ -198,7 +200,7 @@ class CifarResNet(nn.Module):
         if stride != 1 or self.in_planes != out_planes * block.expansion:
             downsample = nn.Sequential(
                 conv1x1(self.in_planes, out_planes * block.expansion, stride),
-                nn.BatchNorm1d(out_planes * block.expansion)
+                nn.BatchNorm2d(out_planes * block.expansion),
             )
 
         # Create blocks for each layer (stacks orderly)
