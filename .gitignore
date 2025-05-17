@@ -8,3 +8,6 @@ prune
 
 # Ignore data
 data
+
+# Ignore wandb
+wandb
