@@ -1,9 +1,81 @@
 import random
+import argparse
 
 import torch
 import numpy as np
+from omegaconf import OmegaConf
+from prettytable import PrettyTable
 
 # Functions to handle (or parse) arguments
+def parse_args():
+    parser = argparse.ArgumentParser(description='Train a NeRF model')
+
+    parser.add_argument('--config', type=str, required=True,
+                        help='Path to the network configuration file')
+    parser.add_argument('--ratio', type=float, default=1.0,
+                        help='Ratio used to subset training inputs')
+    parser.add_argument('--resume_from', type=str,
+                        help='Checkpoint file path to resume training from')
+    parser.add_argument('--load_from', type=str,
+                        help='Checkpoint file path to load')
+    parser.add_argument('--test_result_path', type=str,
+                        help='Path to save the test result')
+    parser.add_argument('--test', action='store_true',
+                        default=False, help='Test the model')
+    
+    args = parser.parse_args()
+
+    config = OmegaConf.load(args.config)
+
+    # Load the base configuration
+    if config.get('base_config', None):
+        print("Loading base config from " + config.base_config)
+        base_config = OmegaConf.load(config.base_config)
+        config = OmegaConf.merge(base_config, config)
+
+    # Convert args to a dictionary
+    # We filter out None values and the 'config' argument
+    cli_args = {k: v for k, v in vars(args).items()}
+
+    # Merge command-line arguments into the configuration
+    config = OmegaConf.merge(config, cli_args)
+    if len(config.dimensions.range) == 2:
+        interval = config.dimensions.get('interval', 1)
+        config.dimensions.range = list(
+            range(config.dimensions.range[0], config.dimensions.range[1] + 1, interval))
+    return config
+
+def print_omegaconf(cfg):
+    """
+    Print an OmegaConf configuration in a table format.
+
+    :param cfg: OmegaConf configuration object.
+    """
+    # Flatten the OmegaConf configuration to a dictionary
+    flat_config = OmegaConf.to_container(cfg, resolve=True)
+
+    # Create a table with PrettyTable
+    table = PrettyTable()
+
+    # Define the column names
+    table.field_names = ["Key", "Value"]
+
+    # Recursively go through the items and add rows
+    def add_items(items, parent_key=""):
+        for k, v in items.items():
+            current_key = f"{parent_key}.{k}" if parent_key else k
+            if isinstance(v, dict):
+                # If the value is another dict, recursively add its items
+                add_items(v, parent_key=current_key)
+            else:
+                # If it's a leaf node, add it to the table
+                table.add_row([current_key, v])
+
+    # Start adding items from the top-level configuration
+    add_items(flat_config)
+
+    # Print the table
+    print(table)
 
 
 # Functions to handle random seed
