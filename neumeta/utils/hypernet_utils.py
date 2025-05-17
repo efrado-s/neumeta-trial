@@ -336,5 +336,38 @@ def sample_weights(model, model_cls,
     return model_cls, list(predicted_checkpoint.values())
 
 # Functions for training
-def sample_subset():
-    return None
+def sample_subset(coords_tensor, keys_list, indices_list, size_list, key_mask, ratio=0.5):
+    """
+    Samples a subset of the input data based on the given ratio.
+
+    Args:
+        coords_tensor (numpy.ndarray): The coordinates tensor.
+        keys_list (list): The list of keys.
+        indices_list (list): The list of indices.
+        ratio (float): The ratio of the subset to the original data.
+
+    Returns:
+        tuple: A tuple containing the subset coordinates tensor, the subset keys list,
+            the subset indices list, and the selected keys list.
+    """
+    # Return immediately if ratio is 1.0
+    if ratio >= 1.0:
+        return coords_tensor, keys_list, indices_list, size_list, np.unique(keys_list)
+    assert len(coords_tensor) == len(keys_list) == len(indices_list)
+
+    # Gets the index of unique coordinates based on ratio
+    unique_keys = np.unique(keys_list)
+    num_samples = int(len(unique_keys) * ratio)
+    selected_keys = random.sample(list(unique_keys), k=num_samples)
+
+    # Create key_mask based on selected keys
+    if key_mask is not None:
+        selected_mask = sum([key_mask[k] for k in selected_keys]).bool()
+
+    # Get the subsets of coordinates based on ratio using selected_mask as filter
+    subset_coords = coords_tensor[selected_mask]
+    subset_keys = keys_list[selected_mask]
+    subset_indices = indices_list[selected_mask]
+    subset_size = size_list[selected_mask]
+
+    return subset_coords, subset_keys, subset_indices, subset_size, selected_keys
