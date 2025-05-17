@@ -164,7 +164,7 @@ def get_hypernetwork(args, number_param, device='cuda'):
             num_compose=number_param
         ).to(device)
     elif hyper_model_type == 'resmlp':
-        print(f'Using scalar {args.hyper_model.get('scalar', 0.1)}')
+        print(f"Using scalar {args.hyper_model.get('scalar', 0.1)}")
         hyper_model = NeRF_ResMLP_Compose(
             input_dim=args.hyper_model.input_dim,
             hidden_dim=args.hyper_model.hidden_dim,
