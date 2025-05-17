@@ -164,3 +164,56 @@ class EMA:
 
 
 # Functions for saving and loading checkpoints
+def save_checkpoint(filepath, model, optimizer, ema, epoch, best_acc):
+    """
+    Saves the current state including a model, optimizer, and EMA shadow weights.
+
+    Args:
+    filepath (str): The file path where the checkpoint will be saved.
+    model (torch.nn.Module): The model.
+    optimizer (torch.optim.Optimizer): The optimizer.
+    ema (EMA): The EMA object.
+    epoch (int): The current epoch.
+    best_acc (float): The best accuracy observed during training.
+    """
+    # Save the model, optimizer, EMA shadow weights, and other elements
+    if ema is not None:
+        checkpoint = {
+            'epoch': epoch,
+            'model_state_dict': model.state_dict(),
+            'optimizer_state_dict': optimizer.state_dict(),
+            'ema_shadow': ema.shadow,  # specifically saving shadow weights
+            'best_acc': best_acc,
+        }
+    else:
+        checkpoint = {
+            'epoch': epoch,
+            'model_state_dict': model.state_dict(),
+            'optimizer_state_dict': optimizer.state_dict(),
+            'best_acc': best_acc,
+        }
+    torch.save(checkpoint, filepath)
+
+def load_checkpoint(filepath, model, optimizer, ema, device='cuda'):
+    """
+    Loads the state from a checkpoint into the model, optimizer, and EMA object.
+
+    Args:
+    filepath (str): The file path to load the checkpoint from.
+    model (torch.nn.Module): The model.
+    optimizer (torch.optim.Optimizer): The optimizer.
+    ema (EMA): The EMA object.
+    """
+    checkpoint = torch.load(filepath, map_location='cpu')
+    if 'state_dict' in checkpoint:
+        model.load_state_dict(checkpoint['state_dict'])
+    else:
+        model.load_state_dict(checkpoint['model_state_dict'])
+    if optimizer is not None:
+        optimizer.load_state_dict(checkpoint['optimizer_state_dict'])
+    if ema is not None:
+        ema.shadow = {k: checkpoint['ema_shadow'][k].to(
+            device) for k in checkpoint['ema_shadow']}
+    # ema.shadow = {k:checkpoint['ema_shadow'][k].to(device) for k in checkpoint['ema_shadow'] }  # specifically loading shadow weights
+
+    return checkpoint  # Contains other information like epoch, best_acc
