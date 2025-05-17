@@ -140,42 +140,6 @@ def shuffle_coordinates_all(dim_dict):
     return dim_dict
 
 
-# Function to find reconstruct_loss
-def weighted_regression_loss(reconstructed_weights, gt_selected_weights, epsilon=1e-6):
-    """
-    Calculate reconstruct loss by calculating weighted regression loss, with each element in the ground truth weights
-    contributing a weight proportional to its absolute value.
-
-    Args:
-    - reconstructed_weights (list of Tensors): List of newly reconstructed weight tensors.
-    - gt_selected_weights (list of Tensors): List of original weights from pretrained network; ground truth weight tensors.
-    Returns:
-    - torch.Tensor: The mean of the weighted regression losses.
-    """
-    # Initialize an empty list to store individual loss
-    losses = []
-
-    # Iterate over the pairs of reconstructed and ground truth weights
-    for w, w_gt in zip(reconstructed_weights, gt_selected_weights):
-        # Calculate the weights as the absolute values of the ground truth weights
-        element_weights = torch.abs(w_gt) + epsilon
-        element_weights = element_weights / torch.max(element_weights)
-
-        # Compute the MSE loss element-wise
-        element_loss = (w - w_gt) ** 2
-
-        # Apply the weights to the loss
-        weighted_loss = element_loss * element_weights
-
-        # Sum the weighted loss for the current pair and add it to the list
-        losses.append(weighted_loss.mean())
-
-    # Calculate the mean of the weighted losses
-    reconstruct_loss = torch.mean(torch.stack(losses))
-
-    return reconstruct_loss
-
-
 # Functions to create hypernetwork and using it
 def get_hypernetwork(args, number_param, device='cuda'):
     """
@@ -456,3 +420,60 @@ def sample_merge_model(hyper_model, model, args, K=50, device='cuda'):
     accumulated_model.eval()
     return accumulated_model
 
+
+# Functions for getting losses
+def weighted_regression_loss(reconstructed_weights, gt_selected_weights, epsilon=1e-6):
+    """
+    Calculate reconstruct loss by calculating weighted regression loss, with each element in the ground truth weights
+    contributing a weight proportional to its absolute value.
+
+    Args:
+    - reconstructed_weights (list of Tensors): List of newly reconstructed weight tensors.
+    - gt_selected_weights (list of Tensors): List of original weights from pretrained network; ground truth weight tensors.
+    Returns:
+    - torch.Tensor: The mean of the weighted regression losses.
+    """
+    # Initialize an empty list to store individual loss
+    losses = []
+
+    # Iterate over the pairs of reconstructed and ground truth weights
+    for w, w_gt in zip(reconstructed_weights, gt_selected_weights):
+        # Calculate the weights as the absolute values of the ground truth weights
+        element_weights = torch.abs(w_gt) + epsilon
+        element_weights = element_weights / torch.max(element_weights)
+
+        # Compute the MSE loss element-wise
+        element_loss = (w - w_gt) ** 2
+
+        # Apply the weights to the loss
+        weighted_loss = element_loss * element_weights
+
+        # Sum the weighted loss for the current pair and add it to the list
+        losses.append(weighted_loss.mean())
+
+    # Calculate the mean of the weighted losses
+    reconstruct_loss = torch.mean(torch.stack(losses))
+
+    return reconstruct_loss
+
+def validate_single(model_cls, val_loader, criterion, args=None, device='cuda'):
+    val_loss = 0.0
+    preds = []
+    gt = []
+
+    model_cls.eval()
+
+    with torch.no_grad():
+        for x, target in tqdm(val_loader):
+            
+            x, target = x.to(device), target.to(device)
+            predict = model_cls(x)
+            pred = torch.argmax(predict, dim=-1)
+            
+            preds.append(pred)
+            gt.append(target)
+
+            loss = criterion(predict, target)
+            val_loss += loss.item()
+        
+    return val_loss / len(val_loader), accuracy_score(torch.cat(gt).cpu().numpy(), torch.cat(preds).cpu().numpy())
