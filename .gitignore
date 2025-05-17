@@ -11,3 +11,6 @@ data
 
 # Ignore wandb
 wandb
+
+# Ignore toy (weight)
+toy/experiments/**/*.pth
