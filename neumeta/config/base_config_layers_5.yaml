@@ -1,6 +1,6 @@
 # Experiment settings
 experiment:
-  name: ninr_resnet20_cifar10_32-64-4layer-5
+  name: resnet20_cifar10_base_config_layers_5
   recononly: 0
   num_epochs: 30
   log_interval: 25
@@ -21,13 +21,13 @@ training:
   lr_steps: [100, 150]
   weight_decay: 1e-2
   clip_grad: 10.0
-  save_model_path: toy/experiments/resnet20_cifar10_32-64-4layer-5 # Directory to save the trained model
+  save_model_path: toy/experiments/resnet20_cifar10_base_config_layers_5 # Directory to save the trained model
 
 # Hyper-model specifications (specific to NeRF)
 hyper_model:
   input_dim: 6
   hidden_dim: 256
-  num_layers: 4
+  num_layers: 5
   num_freqs: 16
   output_dim: 9
   ema_decay: 0.995  # Exponential moving average decay
