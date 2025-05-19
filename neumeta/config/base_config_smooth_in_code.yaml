@@ -1,9 +1,9 @@
 # Experiment settings
 experiment:
-  name: resnet20_cifar10_paper_config_no_smooth
+  name: base_config_smooth_in_code
   recononly: 0
-  num_epochs: 200
-  log_interval: 100
+  num_epochs: 30
+  log_interval: 25
   eval_interval: 1
   seed: 42  # Random seed
 
@@ -15,24 +15,19 @@ model:
 
 # Training configurations
 training:
-  optimizer: 'adam'
   learning_rate: 1e-3
-  batch_size: 128
-  coordinate_noise: 0.001
-  scheduler: cosine # Change scheduler into cosine 
-  T_max: 200
-  # lr_steps: [100, 150]
-  weight_decay: 1e-3
-  # strong_aug: v1 # Adding more augmentation to test the result
+  batch_size: 64
+  coordinate_noise: 0.0
+  lr_steps: [100, 150]
+  weight_decay: 1e-2
   clip_grad: 10.0
-  save_model_path: toy/experiments/resnet20_cifar10_paper_config_no_smooth # Directory to save the trained model
+  save_model_path: toy/experiments/base_config_smooth_in_code # Directory to save the trained model
 
 # Hyper-model specifications (specific to NeRF)
 hyper_model:
-  type: resmlp # resmlp in paper
-  input_dim: 6  # Input tensors (the coordinate)
+  input_dim: 6
   hidden_dim: 256
-  num_layers: 5  # change to 5 from 4
+  num_layers: 4
   num_freqs: 16
   output_dim: 9
   ema_decay: 0.995  # Exponential moving average decay

@@ -1,0 +1,5 @@
+Hidden_dim: 16, Validation Loss: 1.4211, Validation Accuracy: 58.91%
+Hidden_dim: 17, Validation Loss: 1.3791, Validation Accuracy: 66.89%
+Hidden_dim: 18, Validation Loss: 1.3776, Validation Accuracy: 62.44%
+Hidden_dim: 19, Validation Loss: 1.3922, Validation Accuracy: 56.83%
+Hidden_dim: 20, Validation Loss: 1.3937, Validation Accuracy: 63.40%

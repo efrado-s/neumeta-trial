@@ -1,0 +1,10 @@
+Hidden_dim: 16, Validation Loss: 1.8076, Validation Accuracy: 75.87%
+Hidden_dim: 17, Validation Loss: 1.8076, Validation Accuracy: 75.87%
+Hidden_dim: 18, Validation Loss: 1.8076, Validation Accuracy: 75.87%
+Hidden_dim: 19, Validation Loss: 1.8076, Validation Accuracy: 75.87%
+Hidden_dim: 20, Validation Loss: 1.8076, Validation Accuracy: 75.87%
+Hidden_dim: 21, Validation Loss: 1.8076, Validation Accuracy: 75.87%
+Hidden_dim: 22, Validation Loss: 1.8076, Validation Accuracy: 75.87%
+Hidden_dim: 23, Validation Loss: 1.8076, Validation Accuracy: 75.87%
+Hidden_dim: 24, Validation Loss: 1.8076, Validation Accuracy: 75.87%
+Hidden_dim: 25, Validation Loss: 1.8076, Validation Accuracy: 75.87%
