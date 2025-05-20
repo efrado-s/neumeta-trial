@@ -1,7 +1,5 @@
 # Ignore unfinished files
 neumeta/train_imagenet_ddp.ipynb
-neumeta/models/resnet_imagenet.py
-neumeta/models/lenet.py
 prune
 
 # Ignore pycache
