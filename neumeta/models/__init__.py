@@ -3,6 +3,7 @@ import os
 import torch
 
 from .resnet_cifar import *
+from .lenet import *
 from .utils import fuse_module
 from smooth.permute import PermutationManager, compute_tv_loss_for_network
 
@@ -42,4 +43,10 @@ def create_model_cifar10(model_name, hidden_dim, path=None, smooth=False):
         ])
         print(f'Permuted TV original model: {compute_tv_loss_for_network(model, lambda_tv=1.0).item()}')
     
+    return model
+
+
+def create_mnist_model(model_name, hidden_dim, depths=None, path=None):
+    if model_name == "LeNet":
+        model = MnistNet(hidden_dim=hidden_dim)
     return model

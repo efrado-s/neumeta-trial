@@ -75,10 +75,24 @@ def get_cifar10(batch_size, strong_transform=False):
 
     return train_loader, val_loader
 
+
+def get_mnist(batch_size, strong_transform=False):
+    # Data preparation
+    transform = transforms.Compose([transforms.ToTensor(), transforms.Normalize((0.5,), (0.5,))])
+    train_dataset = datasets.MNIST(root='./data', train=True, transform=transform, download=True)
+    val_dataset = datasets.MNIST(root='./data', train=False, transform=transform)
+
+    train_loader = DataLoader(train_dataset, batch_size=batch_size, shuffle=True)
+    val_loader = DataLoader(val_dataset, batch_size=batch_size, shuffle=False)
+    return train_loader, val_loader
+
+
 def get_dataset(dataset_name, batch_size, strong_transform=False):
     print(f'Using dataset: {dataset_name} with batch size: {batch_size} and strong transform: {strong_transform}')
     
     if dataset_name == 'cifar10':
         train_loader, val_loader = get_cifar10(batch_size, strong_transform)
+    elif dataset_name == 'mnist':
+        train_loader, val_loader =  get_mnist(batch_size, strong_transform)
     
     return train_loader, val_loader
