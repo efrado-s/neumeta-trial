@@ -4,6 +4,7 @@ import torch
 
 from .resnet_cifar import *
 from .lenet import *
+from .densenet import *
 from .utils import fuse_module
 from smooth.permute import PermutationManager, compute_tv_loss_for_network
 
@@ -49,4 +50,10 @@ def create_model_cifar10(model_name, hidden_dim, path=None, smooth=False):
 def create_mnist_model(model_name, hidden_dim, depths=None, path=None):
     if model_name == "LeNet":
         model = MnistNet(hidden_dim=hidden_dim)
+    return model
+
+
+def create_densenet_model(model_name, layers, growth, compression, bottleneck, drop_rate):
+    if model_name == 'DenseNet':
+        model = DenseNet3(layers, 10, growth, compression, bottleneck, drop_rate)
     return model
