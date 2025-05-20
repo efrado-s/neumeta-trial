@@ -1,0 +1,30 @@
+experiment:
+  name: densenet_bc_40_12_baseline
+  num_epochs: 300
+  log_interval: 100
+  eval_interval: 1
+  seed: 42
+
+model:
+  type: DenseNet
+  pretrained_path: toy/experiments/CIFAR10_DenseNet_BC_40_12.pth
+  layers: 40
+  growth: 12
+  drop_rate: 0.0
+  compression: 0.5
+  bottleneck: True
+
+training:
+  dataset: cifar10
+  batch_size: 64
+  learning_rate: 0.1
+  optimizer: sgd
+  momentum: 0.9
+  weight_decay: 1e-4
+  save_model_path: toy/experiments/densenet_bc_40_12_baseline
+
+dimensions:
+  range: [12]
+  test: 12
+  norm: 12
+  start: 12
