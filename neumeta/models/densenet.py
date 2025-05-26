@@ -90,7 +90,7 @@ class DenseBlock(nn.Module):
 
 class DenseNet3(nn.Module):
     def __init__(self, depth, num_classes, growth_rate=12,
-                 reduction=0.5, bottleneck=True, droprate=0.0):
+                 reduction=0.5, bottleneck=True, droprate=0.0, hidden_dim=48):
         super(DenseNet3, self).__init__()
         in_planes = 2 * growth_rate
         n = (depth - 4) / 3
@@ -129,6 +129,8 @@ class DenseNet3(nn.Module):
         self.fc = nn.Linear(in_planes, num_classes)
         self.in_planes = in_planes
 
+        self.set_changeable(hidden_dim)
+
         for m in self.modules():
             if isinstance(m, nn.Conv2d):
                 n = m.kernel_size[0] * m.kernel_size[1] * m.out_channels
@@ -148,3 +150,57 @@ class DenseNet3(nn.Module):
         out = self.avgpool(out)
         out = out.view(-1, self.in_planes)
         return self.fc(out)
+    
+    def set_changeable(self, hidden_dim):
+        changeable_module = self.block3.layer[-1]
+        # Get the original conv1 parameters
+        old_conv1 = changeable_module.conv1
+        new_conv1 = nn.Conv2d(
+            in_channels=old_conv1.in_channels,
+            out_channels=hidden_dim,
+            kernel_size=old_conv1.kernel_size,
+            stride=old_conv1.stride,
+            padding=old_conv1.padding,
+            bias=old_conv1.bias is not None
+        )
+
+        # Get the original conv2 parameters
+        old_conv2 = changeable_module.conv2
+        new_conv2 = nn.Conv2d(
+            in_channels=hidden_dim,  # conv2 input must match conv1 output
+            out_channels=old_conv2.out_channels,
+            kernel_size=old_conv2.kernel_size,
+            stride=old_conv2.stride,
+            padding=old_conv2.padding,
+            bias=old_conv2.bias is not None
+        )
+
+        old_bn2 = changeable_module.bn2
+        new_bn2 = nn.BatchNorm2d(
+            num_features=hidden_dim,
+            eps=old_bn2.eps,
+            momentum=old_bn2.momentum,
+            affine=old_bn2.affine,
+            track_running_stats=old_bn2.track_running_stats
+        )
+
+        # Replace conv1 and conv2 in the module
+        changeable_module.conv1 = new_conv1
+        changeable_module.conv2 = new_conv2
+        changeable_module.bn2 = new_bn2   
+    
+    @property
+    def learnable_parameter(self):
+
+        self.keys = [k 
+                     for k, w in self.named_parameters()
+                     if k.startswith('block3.layer.5.conv')]
+        
+        return {k: v
+                for k, v in self.state_dict().items()
+                if k in self.keys}
+        
+
+
+        # return {k: v.detach().clone()
+        #         for k, v in dict(self.named_parameters()).items()}

@@ -53,7 +53,18 @@ def create_mnist_model(model_name, hidden_dim, depths=None, path=None):
     return model
 
 
-def create_densenet_model(model_name, layers, growth, compression, bottleneck, drop_rate):
+def create_densenet_model(model_name, layers, growth, compression, bottleneck, drop_rate, hidden_dim,
+                          path=None):
     if model_name == 'DenseNet':
-        model = DenseNet3(layers, 10, growth, compression, bottleneck, drop_rate)
+        model = DenseNet3(layers, 10, growth, compression, bottleneck, drop_rate, hidden_dim)
+    
+    # Load checkpoint
+    # if path:
+    #    if os.path.exists(path):
+    #        print('Loading model from', path)
+    #        state_dict = torch.load(path, map_location=torch.device('cpu'))
+    #        model.load_state_dict(state_dict['model_state_dict'])
+
+    # fuse_module(model)
+
     return model
