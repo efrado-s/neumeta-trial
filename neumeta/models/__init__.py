@@ -60,11 +60,22 @@ def create_densenet_model(model_name, layers, growth, compression, bottleneck, d
     
     # Load checkpoint
     if path:
-       if os.path.exists(path):
-           print('Loading model from', path)
-           state_dict = torch.load(path, map_location=torch.device('cpu'))
-           model.load_state_dict(state_dict['model_state_dict'])
+        if os.path.exists(path):
+            print('Loading model from', path)
+            checkpoint = torch.load(path, map_location=torch.device('cpu'))
+            pretrained_dict = checkpoint['model_state_dict']
+            
+            model_dict = model.state_dict()
 
+            filtered_dict = {k: v
+                             for k, v in pretrained_dict.items()
+                             if k in model_dict and v.shape == model_dict[k].shape}
+            
+            model_dict.update(filtered_dict)
+
+            model.load_state_dict(model_dict)
+
+    # Fuse module
     fuse_module(model)
 
     return model
