@@ -53,7 +53,7 @@ def create_mnist_model(model_name, hidden_dim, depths=None, path=None):
     return model
 
 
-def create_densenet_model(model_name, layers, growth, compression, bottleneck, drop_rate, hidden_dim,
+def create_densenet_model(model_name, layers, growth, compression, bottleneck, drop_rate, hidden_dim, smooth=False,
                           path=None):
     if model_name == 'DenseNet':
         model = DenseNet3(layers, 10, growth, compression, bottleneck, drop_rate, hidden_dim)
@@ -77,5 +77,19 @@ def create_densenet_model(model_name, layers, growth, compression, bottleneck, d
 
     # Fuse module
     fuse_module(model)
+
+    # Smooth initial weights manifold before processing it
+    if smooth:
+        print('Smooth the parameters of the model')
+        print(f'Old TV original model: {compute_tv_loss_for_network(model, lambda_tv=1.0).item()}')
+        input_tensor = torch.randn(1, 3, 32, 32)
+        permute_func = PermutationManager(model, input_tensor)
+        permute_dict = permute_func.compute_permute_dict()
+        model = permute_func.apply_permutations(permute_dict, ignored_keys=[
+            ('conv1.weight', 'in_channels'),
+            ('fc.weight', 'out_channels'),
+            ('fc.bias', 'out_channels')
+        ])
+        print(f'Permuted TV original model: {compute_tv_loss_for_network(model, lambda_tv=1.0).item()}')
 
     return model

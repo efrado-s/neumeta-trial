@@ -15,3 +15,10 @@ wandb
 toy/experiments/**/*.pth
 
 densenet_fuse_model.ipynb
+
+neumeta/config/cifar10
+neumeta/config/densenet
+
+training_archive
+
+toy/experiments/
