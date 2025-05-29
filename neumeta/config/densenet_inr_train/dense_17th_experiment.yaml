@@ -1,0 +1,50 @@
+experiment:
+  name: dense_17th_experiment
+  num_epochs: 50
+  log_interval: 50
+  eval_interval: 1
+  seed: 42
+
+model:
+  type: DenseNet
+  pretrained_path: toy/experiments/densenet_bc_40_12_baseline/densenet_bc_40_12_cifar10_baseline_best.pth
+  layers: 40
+  growth: 12
+  compression: 0.5
+  bottleneck: True
+  drop_rate: 0.0
+  
+
+training:
+  dataset: cifar10
+  batch_size: 128 # Use batch size in experiment 11
+  coordinate_noise: 0.01 # Add coord noise
+  learning_rate: 1e-3
+  lr_steps: [100, 150]
+  optimizer: 'adamw'
+  weight_decay: 1e-2
+  clip_grad: 10.0
+  save_model_path: toy/experiments_densenet/dense_17th_experiment
+
+
+hyper_model:
+  type: resmlp
+  input_dim: 6
+  hidden_dim: 128
+  num_layers: 8 # Increase layers to 7 from 5 in experiment 11
+  num_freqs: 16
+  output_dim: 9
+  ema_decay: 0.995
+
+  loss_weight:
+    ce_weight: 1.0
+    reg_weight: 1e-4
+    recon_weight: 1.0
+    kd_weight: 0.1
+
+# Change growth rate
+dimensions:
+  range: [24, 48]  # Growth rate range for the experiment
+  test: 24  # Growth rate for testing
+  norm: 120  # To normalize the layer such that no value is too small
+  start: 48 # Starting dimension
