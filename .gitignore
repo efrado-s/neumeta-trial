@@ -22,3 +22,5 @@ neumeta/config/densenet
 training_archive
 
 toy/experiments/
+
+model_dim_exploration.ipynb
