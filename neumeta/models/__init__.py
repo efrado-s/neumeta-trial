@@ -5,6 +5,7 @@ import torch
 from .resnet_cifar import *
 from .lenet import *
 from .densenet import *
+from .densenet_2 import *
 from .utils import fuse_module
 from smooth.permute import PermutationManager, compute_tv_loss_for_network
 
@@ -53,10 +54,12 @@ def create_mnist_model(model_name, hidden_dim, depths=None, path=None):
     return model
 
 
-def create_densenet_model(model_name, layers, growth, compression, bottleneck, drop_rate, hidden_dim, smooth=False,
+def create_densenet_model(model_name, layers, growth, compression, bottleneck, drop_rate, hidden_dim, inr_layer=1, smooth=False,
                           path=None):
     if model_name == 'DenseNet':
-        model = DenseNet3(layers, 10, growth, compression, bottleneck, drop_rate, hidden_dim)
+        model = DenseNet3(layers, 10, growth, compression, bottleneck, drop_rate, hidden_dim, inr_layer)
+    if model_name == 'DenseNet_changeable':
+        model = DenseNet3_changeable(layers, 10, growth, compression, bottleneck, drop_rate, hidden_dim, inr_layer)
     
     # Load checkpoint
     if path:
